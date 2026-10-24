@@ -9,6 +9,12 @@
 > Ảnh chụp thật trên LG QNED 55" webOS 25 — nền Kame House (Dragon Ball), thời tiết TP. Hồ Chí Minh.
 > Real photo from an LG QNED 55" running webOS 25 — Kame House (Dragon Ball) wallpaper, Ho Chi Minh City weather.
 
+## ⚠️ Cảnh báo — tự chịu trách nhiệm / Warning — use at your own risk
+
+Đây là phần mềm cộng đồng chạy nhờ Developer Mode của tivi — **bạn tự chịu trách nhiệm khi cài và sử dụng**. Đặc biệt về **nâng cấp firmware của tivi**: bản cập nhật của LG có thể xoá trạng thái Developer Mode, gỡ app tự cài hoặc làm launcher ngừng hoạt động. Hãy cân nhắc kỹ trước khi nâng cấp firmware; nếu đã nâng cấp xong mà launcher mất, cứ cài lại từ đầu theo hướng dẫn trong repo. Tác giả không chịu trách nhiệm cho bất kỳ trục trặc nào phát sinh từ việc cài đặt, sử dụng hay nâng cấp.
+
+This is community software that runs via the TV's Developer Mode — **you install and use it at your own risk**. In particular regarding **TV firmware upgrades**: an LG update can wipe the Developer Mode state, remove sideloaded apps, or break the launcher. Think carefully before upgrading your TV's firmware; if an upgrade does remove the launcher, simply reinstall from scratch following this repo's guide. The author takes no responsibility for any issues arising from installing, using, or upgrading.
+
 ## Có gì trong bộ này / What's inside
 
 | File | Mô tả / Description |

@@ -12,6 +12,8 @@ Giao diện sau khi cài:
 
 Đã chạy thực tế trên LG QNED 55" webOS 25.
 
+> ⚠️ **Tự chịu trách nhiệm:** đây là phần mềm cộng đồng chạy trên Developer Mode. Đặc biệt, **nâng cấp firmware tivi** có thể xoá Developer Mode / gỡ app tự cài / làm hỏng launcher — cân nhắc kỹ trước khi nâng cấp, và nếu launcher mất sau khi nâng cấp thì cài lại từ đầu theo hướng dẫn này.
+
 ## 0. Cài 1 lệnh duy nhất (khuyên dùng)
 
 Trên Mac, cùng Wi-Fi với tivi, tivi đã bật Developer Mode (mục 1):

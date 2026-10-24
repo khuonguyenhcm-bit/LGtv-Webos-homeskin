@@ -12,6 +12,8 @@ What you get:
 
 Battle-tested on an LG QNED 55" running webOS 25.
 
+> ⚠️ **Use at your own risk:** this is community software running on Developer Mode. In particular, a **TV firmware upgrade** can wipe Developer Mode, remove sideloaded apps, or break the launcher — think before upgrading, and if the launcher is gone after an upgrade, reinstall from scratch with this guide.
+
 ## 0. One-command install (recommended)
 
 On a Mac on the same Wi-Fi as the TV, with Developer Mode already on (section 1):
