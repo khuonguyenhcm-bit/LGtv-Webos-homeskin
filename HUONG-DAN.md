@@ -12,6 +12,20 @@ Giao diện sau khi cài:
 
 Đã chạy thực tế trên LG QNED 55" webOS 25.
 
+## 0. Cài 1 lệnh duy nhất (khuyên dùng)
+
+Trên Mac, cùng Wi-Fi với tivi, tivi đã bật Developer Mode (mục 1):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/khuonguyenhcm-bit/LGtv-Webos-homeskin/main/setup.sh | bash
+```
+
+Script sẽ hỏi IP tivi, hỏi đã ghép nối ares chưa (lần đầu thì hỏi passphrase), rồi tự tải repo + cài launcher lên tivi trong 1 lượt. Không cần cài repo gốc webos-vibehack trước, không cần copy file qua lại, không cần git.
+
+Nếu máy đã có repo rồi: mở Terminal trong thư mục repo rồi chạy `TV_HOST=<IP tivi> bash setup.sh` (bỏ qua bước tải).
+
+Vẫn cần bàn tay ở 2 chỗ của LG: gõ passphrase khi được hỏi, và bấm Đồng ý trên tivi khi hiện bảng hỏi kết nối lúc đồng bộ. Bước install mất 1–2 phút.
+
 ## 1. Chuẩn bị
 
 **Trên tivi — bật Developer Mode (làm 1 lần):**
@@ -33,6 +47,8 @@ npx -y -p @webos-tools/cli ares-setup-device -m lgtv -i "{'privatekey':'lgtv_web
 
 ## 2. Tải bộ cài về máy
 
+Không cần bước này nếu bạn dùng cách ở mục 0 — `setup.sh` tự tải repo về. Mục này chỉ dành cho ai muốn tải sẵn repo về máy (để tuỳ biến trước hoặc cài lại nhiều lần):
+
 ```bash
 git clone https://github.com/khuonguyenhcm-bit/LGtv-Webos-homeskin.git
 cd LGtv-Webos-homeskin
@@ -42,13 +58,14 @@ Hoặc bấm **Code → Download ZIP** trên trang GitHub rồi giải nén, m�
 
 ## 3. Cài lên tivi — 1 lệnh
 
-Tivi đang bật, ở màn hình chính. Chạy:
+Tivi đang bật, ở màn hình chính. Đang ở trong thư mục repo thì chạy:
 
 ```bash
-TV_HOST=192.168.1.6 bash install.sh    # thay bằng IP tivi của bạn
+TV_HOST=192.168.1.6 bash setup.sh    # thay bằng IP tivi của bạn
 ```
 
-- Lần chạy đầu, script tự tạo môi trường Python (`venv`) và cài thư viện cần thiết — bạn không phải làm gì thêm.
+- `setup.sh` lo luôn phần ghép nối ares: lần đầu nó hỏi passphrase (6 ký tự trong app Developer Mode) rồi mới cài; máy đã ghép nối rồi thì nó bỏ qua, không cần chạy 3 lệnh ares riêng như trước.
+- Bên trong, `setup.sh` gọi `install.sh`: lần chạy đầu script tự tạo môi trường Python (`venv`) và cài thư viện cần thiết — bạn không phải làm gì thêm.
 - Lần đầu kết nối, **tivi hiện bảng hỏi cho phép kết nối (SSAP) — bấm đồng ý trên tivi**, nếu không bước đồng bộ app sẽ bị timeout.
 - Bước `ares install` thường mất 1–2 phút, đừng tưởng treo. Khi log hiện `Success` và `Launched application com.gathin.tvhome` là xong — launcher mới mở ngay trên tivi.
 
@@ -66,7 +83,7 @@ Gỡ ra: `bash home-watch-mac.sh uninstall`. Bấm Home 2 lần trong 3 giây s�
 
 - **Đổi hình nền:** thay `app/wallpaper.jpg` bằng ảnh 16:9 bất kỳ (nên ≥1920×1080), chạy lại mục 3. Ảnh sáng quá thì chữ khó đọc — skin đã có sẵn lớp tối dần ở mép trên/dưới.
 - **Đổi thành phố thời tiết:** mở `app/app.js`, tìm `fetchWeather`, sửa `latitude`/`longitude` và tên thành phố trong chuỗi hiển thị. Thời tiết lấy từ Open-Meteo (miễn phí, không cần API key), tự cập nhật mỗi 30 phút. Mặc định: TP. Hồ Chí Minh.
-- **Thứ tự app:** sửa `dockApps` trong `app/config.js` (4 app đầu hàng). Ô Settings được ghim ngay sau dock nhờ `pinFirst`; ô Inputs luôn nằm cuối hàng. Trên tivi, **giữ OK** trên một ô để kéo thả sắp xếp — thứ tự được lưu trên tivi.
+- **Thứ tự app:** cứ liệt kê id theo đúng thứ tự mong muốn trong `dockApps` của `app/config.js` (bản mẫu: YouTube, Apple Music, Netflix, Apple TV, Inputs, Settings, Apps) và đặt `columns` bằng đúng số lượng đó; phần còn lại tự xếp theo bảng chữ cái. Trên tivi, **giữ OK** trên một ô để kéo thả sắp xếp — thứ tự được lưu trên tivi. Tên app chỉ hiện dưới ô đang được chọn.
 - **Ẩn app không thích:** thêm id của app vào `hiddenApps` trong `app/config.js` (bản mẫu đã ẩn sẵn 8 Ball Pool). Xem id: `venv/bin/python sync-apps.py <IP tivi> --list`.
 - **Đổi icon từng app:** thả PNG vuông (nên 1024×1024) vào `icons-custom/`, đặt tên đúng tên file icon của app đó (xem trong `app/icons/` sau lần cài đầu). Từ lần cài sau, icon của bạn luôn thắng icon tivi cấp.
 

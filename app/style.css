@@ -177,10 +177,12 @@ body.editing #glass { opacity: 0 !important; }
   transform: translate(-50%, -50%);
 }
 
-/* Labels are always visible under the tiles in this skin. */
+/* Labels stay hidden until their tile is focused. */
 .name {
   height: 40px;
   margin-top: 18px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
   color: rgba(255, 255, 255, 0.92);
   font-size: 26px;
   font-weight: 500;
@@ -192,7 +194,7 @@ body.editing #glass { opacity: 0 !important; }
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
 }
 
-.item.focused .name { color: #fff; font-weight: 600; }
+.item.focused .name { color: #fff; font-weight: 600; opacity: 1; }
 
 /* The single floating glass highlight that springs between tiles. */
 #glass {

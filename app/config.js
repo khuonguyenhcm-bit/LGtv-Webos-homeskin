@@ -1,11 +1,12 @@
 // Launcher configuration. Edit this file, then run webos-launcher/install.sh.
 // App ids: run `python3 sync-apps.py --list` (or look in app/apps.js after a sync).
 window.CONFIG = {
-  // Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped.
-  dockApps: ['netflix', 'youtube.leanback.v4', 'com.apple.appletv', 'com.apple.applemusic'],
+  // The front of the row, in this exact order. Missing apps are skipped.
+  // Everything after these is alphabetical. Raise `columns` to match the count.
+  dockApps: ['youtube.leanback.v4', 'com.apple.applemusic', 'netflix', 'com.apple.appletv', 'com.gathin.tvhome.inputs', 'com.palm.app.settings', 'com.webos.app.discovery'],
 
-  // Extra tiles placed first in the grid, ahead of the alphabetical rest.
-  pinFirst: ['com.palm.app.settings'],
+  // Extra tiles placed right after the dockApps, ahead of the alphabetical rest.
+  pinFirst: [],
 
   // Apps never shown as tiles (inputs and Live TV are already in the Inputs menu).
   hiddenApps: [
@@ -20,6 +21,6 @@ window.CONFIG = {
   // The Live TV app, offered at the end of the Inputs menu. Leave empty to omit.
   liveTvApp: 'com.webos.app.livetv',
 
-  // Tiles per row in the grid; the dock always has this many slots.
-  columns: 4
+  // How many dockApps the row takes before the alphabetical rest (see above).
+  columns: 7
 };

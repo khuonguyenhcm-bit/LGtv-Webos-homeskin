@@ -104,8 +104,6 @@
       var i = rest.findIndex(function (a) { return a.id === id; });
       if (i >= 0) pinned.push(rest.splice(i, 1)[0]);
     });
-    var inpIdx = rest.findIndex(function (a) { return a.id === 'com.gathin.tvhome.inputs'; });
-    if (inpIdx >= 0) rest.push(rest.splice(inpIdx, 1)[0]);
     return dock.concat(pinned, rest);
   }
 

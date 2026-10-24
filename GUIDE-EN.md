@@ -12,6 +12,18 @@ What you get:
 
 Battle-tested on an LG QNED 55" running webOS 25.
 
+## 0. One-command install (recommended)
+
+On a Mac on the same Wi-Fi as the TV, with Developer Mode already on (section 1):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/khuonguyenhcm-bit/LGtv-Webos-homeskin/main/setup.sh | bash
+```
+
+The script asks for the TV IP, asks whether ares is already paired (first run: it asks for the passphrase), then downloads the repo and installs the launcher in one run. No upstream webos-vibehack install first, no file copying, no git needed. Already have the repo? Open a terminal in it and run `TV_HOST=<TV IP> bash setup.sh` (download step skipped).
+
+Two manual steps remain — both are LG's own gates: type the passphrase when asked, and accept the connection prompt on the TV during sync. Install takes 1–2 minutes.
+
 ## 1. Setup
 
 **On the TV — enable Developer Mode (one time):**
@@ -33,6 +45,8 @@ npx -y -p @webos-tools/cli ares-setup-device -m lgtv -i "{'privatekey':'lgtv_web
 
 ## 2. Download this repo
 
+You can skip this step if you use section 0 — `setup.sh` downloads the repo itself. This section is only for those who want the repo on their machine ahead of time (to customise first, or to reinstall often):
+
 ```bash
 git clone https://github.com/khuonguyenhcm-bit/LGtv-Webos-homeskin.git
 cd LGtv-Webos-homeskin
@@ -42,13 +56,14 @@ Or use **Code → Download ZIP** on GitHub, unzip it, and open a terminal in tha
 
 ## 3. Install to the TV — one command
 
-TV on, showing its home screen. Run:
+TV on, showing its home screen. From inside the repo folder, run:
 
 ```bash
-TV_HOST=192.168.1.6 bash install.sh    # use your TV's IP
+TV_HOST=192.168.1.6 bash setup.sh    # use your TV's IP
 ```
 
-- On the first run the script creates its own Python environment (`venv`) and installs what it needs — nothing else for you to do.
+- `setup.sh` also handles ares pairing: on the first run it asks for the passphrase (6 characters, shown in the Developer Mode app) before installing; if this machine is already paired it skips that part — no more running the 3 ares commands separately.
+- Under the hood, `setup.sh` calls `install.sh`: on the first run the script creates its own Python environment (`venv`) and installs what it needs — nothing else for you to do.
 - The first connection shows an **SSAP pairing prompt on the TV — accept it**, otherwise the app sync step times out.
 - The `ares install` step usually takes 1–2 minutes — that is not a hang. You're done when the log shows `Success` and `Launched application com.gathin.tvhome` — the new launcher opens on the TV right away.
 
@@ -66,7 +81,7 @@ Remove it with `bash home-watch-mac.sh uninstall`. Pressing Home twice within 3 
 
 - **Wallpaper:** replace `app/wallpaper.jpg` with any 16:9 image (≥1920×1080 recommended) and re-run step 3. Very bright images make the text harder to read — the skin already darkens the top and bottom edges to help.
 - **Weather city:** open `app/app.js`, find `fetchWeather`, change `latitude`/`longitude` and the city name in the display string. Weather comes from Open-Meteo (free, no API key) and refreshes every 30 minutes. Default: Ho Chi Minh City.
-- **App order:** edit `dockApps` in `app/config.js` (the first four tiles). The Settings tile is pinned right after the dock via `pinFirst`; the Inputs tile is always last. On the TV you can also **hold OK** on a tile to drag it elsewhere — the order is saved on the TV.
+- **App order:** list ids in `dockApps` in `app/config.js` in exactly the order you want (sample: YouTube, Apple Music, Netflix, Apple TV, Inputs, Settings, Apps) and set `columns` to the same count; everything after that is alphabetical. On the TV you can also **hold OK** on a tile to drag it elsewhere — the order is saved on the TV. A tile's name only appears while that tile is focused.
 - **Hide an app:** add its id to `hiddenApps` in `app/config.js` (the sample already hides 8 Ball Pool). List ids with `venv/bin/python sync-apps.py <TV IP> --list`.
 - **Per-app icons:** drop a square PNG (1024×1024 recommended) into `icons-custom/`, named exactly like the app's icon file in `app/icons/` after your first install. From then on your icon wins on every install.
 
