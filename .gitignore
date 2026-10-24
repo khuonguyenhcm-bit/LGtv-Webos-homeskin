@@ -1,0 +1,10 @@
+# pairing key, build output and files generated from your own TV
+.lgtv-key.json
+build/
+venv/
+__pycache__/
+app/apps.js
+app/icons/
+app/icon.png
+app/largeIcon.png
+.DS_Store
