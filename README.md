@@ -24,9 +24,15 @@ Weather comes from [Open-Meteo](https://open-meteo.com) (free, no key), defaulti
 
 ## Cài đặt / Install
 
-Đọc **[HUONG-DAN.md](HUONG-DAN.md)** (tiếng Việt) hoặc **[GUIDE-EN.md](GUIDE-EN.md)** (English). Tóm tắt: cài bản gốc webos-vibehack trước → chép các file trong repo này đè lên → chạy lại `TV_HOST=<IP tivi> ./install.sh`.
+Repo này **tự chứa trọn bộ** (gồm cả launcher gốc) — tải về, chạy 1 lệnh là xong, không cần cài repo gốc trước. Đọc **[HUONG-DAN.md](HUONG-DAN.md)** (tiếng Việt) hoặc **[GUIDE-EN.md](GUIDE-EN.md)** (English).
 
-Short version: install the original webos-vibehack first → copy the files from this repo over it → run `TV_HOST=<your TV IP> ./install.sh` again.
+This repo is **fully self-contained** (the original launcher is bundled) — download it and run one command; no need to install the upstream repo first. See **[GUIDE-EN.md](GUIDE-EN.md)** (English) or **[HUONG-DAN.md](HUONG-DAN.md)** (tiếng Việt).
+
+```bash
+git clone https://github.com/khuonguyenhcm-bit/LGtv-Webos-homeskin.git
+cd LGtv-Webos-homeskin
+TV_HOST=192.168.1.6 bash install.sh    # your TV's IP
+```
 
 ## Nguồn gốc / Credits
 
