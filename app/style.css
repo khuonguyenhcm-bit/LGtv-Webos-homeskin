@@ -1,0 +1,270 @@
+/* Skin 2: full-bleed wallpaper, big clock + weather top-left, one square-icon dock row at the bottom.
+   Stage coordinates are 1920x1080, as in the original skin. */
+
+@font-face {
+  font-family: 'Outfit';
+  src: url('fonts/outfit.ttf') format('truetype');
+  font-weight: 100 900;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: #060a18 url('wallpaper.jpg') center center / cover no-repeat;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  cursor: default;
+}
+
+/* Legibility gradients over the wallpaper: darker at the top (clock) and bottom (dock). */
+body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(5, 8, 20, 0.42) 0%, rgba(5, 8, 20, 0) 30%,
+    rgba(5, 8, 20, 0) 52%, rgba(4, 6, 16, 0.38) 78%, rgba(3, 5, 12, 0.66) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient { display: none; }
+#hero { display: none; }
+
+/* ---- header: clock block top-left ------------------------------------------------------------- */
+
+header {
+  position: absolute;
+  top: 54px;
+  left: 74px;
+  right: 74px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 3;
+}
+
+#greeting { display: none; }
+
+#timeRow { display: flex; align-items: flex-end; }
+
+#clock {
+  font-size: 132px;
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-shadow: 0 3px 30px rgba(0, 0, 0, 0.45);
+}
+
+#ampm {
+  margin: 0 0 20px 14px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+}
+
+.divider { display: none; }
+
+#date {
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 31px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+  white-space: pre;
+}
+
+#weather {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 27px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
+
+#weather svg { width: 30px; height: 30px; margin-right: 12px; fill: rgba(255, 255, 255, 0.88); }
+
+/* Pills still exist for the JS (network watcher, settings actions) but are not shown in this skin. */
+#topButtons { display: none; }
+
+/* ---- dock row ---------------------------------------------------------------------------------- */
+
+#viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+#stage {
+  position: absolute;
+  inset: 0;
+  transition: transform 420ms cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+
+#dockBand { display: none; }
+
+.item {
+  position: absolute;
+  width: 168px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 400ms ease, transform 400ms cubic-bezier(0.2, 0.8, 0.3, 1),
+    left 320ms cubic-bezier(0.25, 0.8, 0.3, 1), top 320ms cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+
+.item.shown { opacity: 1; transform: none; }
+
+.item.moving { z-index: 2; }
+
+.item.moving .card {
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+  animation: wiggle 240ms ease-in-out infinite alternate;
+}
+
+@keyframes wiggle {
+  from { transform: scale(1.12) rotate(-1.2deg); }
+  to { transform: scale(1.12) rotate(1.2deg); }
+}
+
+body.editing #glass { opacity: 0 !important; }
+
+.card {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  border-radius: 36px;
+  overflow: hidden;
+  background: #1c1c1e;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  transition: transform 180ms ease;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 36px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.14);
+}
+
+.item.focused .card {
+  transform: scale(1.16);
+  transition: transform 260ms cubic-bezier(0.34, 1.6, 0.5, 1);
+}
+
+.card img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.card.glyph img {
+  top: 50%;
+  height: 62%;
+  transform: translate(-50%, -50%);
+}
+
+/* Labels are always visible under the tiles in this skin. */
+.name {
+  height: 40px;
+  margin-top: 18px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
+}
+
+.item.focused .name { color: #fff; font-weight: 600; }
+
+/* The single floating glass highlight that springs between tiles. */
+#glass {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 46px;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
+  box-shadow: 0 0 4px 2px rgba(255, 255, 255, 0.19), 0 0 14px 4px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 520ms cubic-bezier(0.3, 1.35, 0.45, 1);
+}
+
+#glass::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0));
+}
+
+/* ---- inputs dropdown ------------------------------------------------------------------------- */
+
+#inputsPanel {
+  position: absolute;
+  z-index: 5;
+  padding: 16px;
+  border-radius: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, rgba(42, 42, 46, 0.96), rgba(22, 22, 24, 0.97));
+  transform-origin: bottom;
+  transition: opacity 220ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+#inputsPanel.hidden { opacity: 0; transform: translateY(16px) scaleY(0.92); pointer-events: none; }
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  height: 84px;
+  padding: 0 24px;
+  border-radius: 24px;
+  font-size: 30px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.inputRow svg { width: 40px; height: 40px; margin-right: 20px; fill: currentColor; }
+
+.inputRow.focused { background: rgba(255, 255, 255, 0.96); color: #000; }
+
+.separator { height: 2px; margin: 12px 24px; background: rgba(255, 255, 255, 0.12); }
+
+/* ---- toast ----------------------------------------------------------------------------------- */
+
+#toast {
+  position: absolute;
+  left: 50%;
+  bottom: 330px;
+  padding: 20px 40px;
+  border-radius: 40px;
+  background: rgba(40, 40, 44, 0.95);
+  font-size: 28px;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 200ms ease;
+  z-index: 6;
+}
+
+#toast.shown { opacity: 1; }
