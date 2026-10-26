@@ -83,8 +83,9 @@ Gỡ ra: `bash home-watch-mac.sh uninstall`. Bấm Home 2 lần trong 3 giây s�
 
 ## 5. Tuỳ biến
 
-- **Đổi hình nền:** thay `app/wallpaper.jpg` bằng ảnh 16:9 bất kỳ (nên ≥1920×1080), chạy lại mục 3. Ảnh sáng quá thì chữ khó đọc — skin đã có sẵn lớp tối dần ở mép trên/dưới.
-- **Đổi thành phố thời tiết:** mở `app/app.js`, tìm `fetchWeather`, sửa `latitude`/`longitude` và tên thành phố trong chuỗi hiển thị. Thời tiết lấy từ Open-Meteo (miễn phí, không cần API key), tự cập nhật mỗi 30 phút. Mặc định: TP. Hồ Chí Minh.
+- **Cài đặt ngay trên tivi (ô Settings):** bấm ô **Settings** trong hàng icon sẽ mở bảng cài đặt của chính launcher — khỏi sửa file, khỏi cài lại. Chỉnh được: **hình nền** (chọn ảnh có sẵn hoặc bất kỳ ảnh/GIF nào trên server ảnh, áp dụng ngay), **cỡ dock** (Nhỏ/Vừa/Lớn), **Khung tranh** bật/tắt + chờ bao lâu thì hiện + mỗi ảnh hiện bao lâu, **thành phố thời tiết**. Cuối bảng có lối vào Cài đặt của tivi và Cài đặt mạng như cũ, kèm mục khôi phục cài đặt gốc của launcher. Mọi thay đổi được lưu trên tivi; nếu có chạy server ảnh, mở thêm `http://<IP máy server>:8797/settings` trên điện thoại là chỉnh từ điện thoại cũng được — tivi và điện thoại tự đồng bộ (bên nào sửa sau thì bên đó thắng, áp dụng ở lần mở launcher kế tiếp).
+- **Đổi hình nền (cách file):** thay `app/wallpaper.jpg` bằng ảnh 16:9 bất kỳ (nên ≥1920×1080), chạy lại mục 3. Đây là hình nền mặc định/"có sẵn" trong bảng Settings ở trên. Ảnh sáng quá thì chữ khó đọc — skin đã có sẵn lớp tối dần ở mép trên/dưới.
+- **Thành phố thời tiết mặc định:** đặt trong `weather` ở `app/config.js` (tên + vĩ độ/kinh độ). Thời tiết lấy từ Open-Meteo (miễn phí, không cần API key), tự cập nhật mỗi 30 phút. Mặc định: TP. Hồ Chí Minh. Đổi nhanh ngay trên tivi bằng bảng Settings (6 thành phố có sẵn).
 - **Thứ tự app:** cứ liệt kê id theo đúng thứ tự mong muốn trong `dockApps` của `app/config.js` (bản mẫu: YouTube, Apple Music, Netflix, Apple TV, Inputs, Settings, Apps) và đặt `columns` bằng đúng số lượng đó; phần còn lại tự xếp theo bảng chữ cái. Trên tivi, **giữ OK** trên một ô để kéo thả sắp xếp — thứ tự được lưu trên tivi. Tên app chỉ hiện dưới ô đang được chọn.
 - **Ẩn app không thích:** thêm id của app vào `hiddenApps` trong `app/config.js` (bản mẫu đã ẩn sẵn 8 Ball Pool). Xem id: `venv/bin/python sync-apps.py <IP tivi> --list`.
 - **Đổi icon từng app:** thả PNG vuông (nên 1024×1024) vào `icons-custom/`, đặt tên đúng tên file icon của app đó (xem trong `app/icons/` sau lần cài đầu). Từ lần cài sau, icon của bạn luôn thắng icon tivi cấp.
@@ -101,7 +102,7 @@ Tải bản mới của repo đè lên thư mục cũ (giữ nguyên 2 thứ: fi
 
 - Nền tảng là launcher webos-vibehack (xem ghi công ở mục 9); repo này gói sẵn cả nền tảng lẫn skin, nên cài 1 lần là đủ.
 - Tivi chỉ cấp icon tối đa 130×130 qua API nên icon gốc phóng to ~3 lần trên màn 4K sẽ vỡ. `sync-apps.py` đã vá sẽ chép đè icon từ `icons-custom/` ngay sau mỗi lần đồng bộ.
-- App Settings xịn của LG (`com.palm.app.settings`) không nằm trong danh sách app tivi trả về, nên `sync-apps.py` tự "tiêm" thêm ô Settings (và ô Inputs). Ô Settings mở đúng Cài đặt của tivi; ô Inputs mở danh sách HDMI/Live TV.
+- App Settings xịn của LG (`com.palm.app.settings`) không nằm trong danh sách app tivi trả về, nên `sync-apps.py` tự "tiêm" thêm ô Settings (và ô Inputs). Ô Settings mở bảng cài đặt của launcher (mục 5) — trong bảng có sẵn lối vào Cài đặt của tivi; ô Inputs mở danh sách HDMI/Live TV.
 - Điều hướng viết cho 1 hàng ngang: trái/phải di chuyển, hàng tự trượt theo ô đang chọn; lên/xuống không dùng.
 
 ## 8. Lỗi thường gặp

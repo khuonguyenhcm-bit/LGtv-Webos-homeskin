@@ -81,8 +81,9 @@ Remove it with `bash home-watch-mac.sh uninstall`. Pressing Home twice within 3 
 
 ## 5. Customising
 
-- **Wallpaper:** replace `app/wallpaper.jpg` with any 16:9 image (≥1920×1080 recommended) and re-run step 3. Very bright images make the text harder to read — the skin already darkens the top and bottom edges to help.
-- **Weather city:** open `app/app.js`, find `fetchWeather`, change `latitude`/`longitude` and the city name in the display string. Weather comes from Open-Meteo (free, no API key) and refreshes every 30 minutes. Default: Ho Chi Minh City.
+- **Settings right on the TV (the Settings tile):** tapping the **Settings** tile opens the launcher's own settings panel — no file editing, no reinstall. You can change: the **wallpaper** (the built-in image, or any photo/GIF served by the photo server, applied instantly), the **dock size** (Small/Medium/Large), the **Photo Frame** on/off + idle wait + per-photo duration, and the **weather city**. The panel's last rows still lead into the TV's own Settings and Network settings, plus a reset for the launcher settings. Changes are saved on the TV; if you run the photo server, open `http://<server machine's IP>:8797/settings` on your phone to edit the same settings from the phone — TV and phone stay in sync (the latest edit wins, applied at the next launcher start).
+- **Wallpaper (the file way):** replace `app/wallpaper.jpg` with any 16:9 image (≥1920×1080 recommended) and re-run step 3. This is the built-in wallpaper the Settings panel above refers to. Very bright images make the text harder to read — the skin already darkens the top and bottom edges to help.
+- **Default weather city:** set under `weather` in `app/config.js` (name + latitude/longitude). Weather comes from Open-Meteo (free, no API key) and refreshes every 30 minutes. Default: Ho Chi Minh City. For a quick change, use the Settings panel on the TV (six preset cities).
 - **App order:** list ids in `dockApps` in `app/config.js` in exactly the order you want (sample: YouTube, Apple Music, Netflix, Apple TV, Inputs, Settings, Apps) and set `columns` to the same count; everything after that is alphabetical. On the TV you can also **hold OK** on a tile to drag it elsewhere — the order is saved on the TV. A tile's name only appears while that tile is focused.
 - **Hide an app:** add its id to `hiddenApps` in `app/config.js` (the sample already hides 8 Ball Pool). List ids with `venv/bin/python sync-apps.py <TV IP> --list`.
 - **Per-app icons:** drop a square PNG (1024×1024 recommended) into `icons-custom/`, named exactly like the app's icon file in `app/icons/` after your first install. From then on your icon wins on every install.
@@ -99,7 +100,7 @@ Download the new version over the old folder (keep two things: `.lgtv-key.json` 
 
 - The base is the webos-vibehack launcher (see credits, section 9); this repo bundles the base and the skin together, so one install is all it takes.
 - The TV serves icons at a maximum of 130×130 over its API, so stock icons get upscaled ~3× on a 4K panel and turn to mush. The patched `sync-apps.py` overwrites them with the files in `icons-custom/` after every sync.
-- LG's real Settings app (`com.palm.app.settings`) is not in the app list the TV returns, so `sync-apps.py` injects a synthetic Settings tile (and an Inputs tile). Settings opens the TV's own Settings; Inputs opens the HDMI/Live TV list.
+- LG's real Settings app (`com.palm.app.settings`) is not in the app list the TV returns, so `sync-apps.py` injects a synthetic Settings tile (and an Inputs tile). The Settings tile opens the launcher's settings panel (section 5), which includes a row into the TV's own Settings; Inputs opens the HDMI/Live TV list.
 - Navigation is built for a single row: Left/Right move, the row scrolls to follow; Up/Down are unused.
 
 ## 8. Troubleshooting

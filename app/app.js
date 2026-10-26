@@ -149,11 +149,12 @@
       name.textContent = app.title;
       el.appendChild(name);
       el.addEventListener('mouseover', function () {
-        if (zone !== 'inputs' && !editing) focusTile(items.indexOf(item));
+        if (zone !== 'inputs' && zone !== 'settings' && !editing) focusTile(items.indexOf(item));
       });
       el.addEventListener('click', function () {
         if (editing) finishEdit(true);
         else if (app.id === INPUTS_ID) showInputs();
+        else if (isSettingsTile(app)) showSettings();
         else launch(app.id, app.title);
       });
       tilesEl.appendChild(el);
@@ -283,6 +284,271 @@
     else rgb = [c, 0, x];
     return rgb.map(function (k) { return Math.round((k + m) * 255); });
   }
+
+  // ---- launcher settings -----------------------------------------------------------------------
+  //
+  // Three layers, lowest first: config.js defaults, the config.json served by the art server
+  // (edited from the phone page at the art server's /settings), and this TV's own panel choices
+  // in localStorage. A layer wins over the ones below when its `rev` is newer, so a change made
+  // on the phone reaches the TV at the next launch and a change made on the TV is pushed back.
+
+  var SETTINGS_KEY = 'tvhome.settings';
+  var SETTINGS_TILE_ID = 'com.palm.app.settings';
+  var DOCK_SIZES = { S: 144, M: 168, L: 192 };
+  var WEATHER_CITIES = [
+    { name: 'Ho Chi Minh City', lat: 10.8231, lon: 106.6297 },
+    { name: 'Ha Noi', lat: 21.0278, lon: 105.8342 },
+    { name: 'Da Nang', lat: 16.0544, lon: 108.2022 },
+    { name: 'Da Lat', lat: 11.9404, lon: 108.4583 },
+    { name: 'Nha Trang', lat: 12.2388, lon: 109.1967 },
+    { name: 'Can Tho', lat: 10.0452, lon: 105.7469 }
+  ];
+
+  function defaultSettings() {
+    return {
+      wallpaper: 'bundled',   // 'bundled', or a photo/GIF file name on the art server
+      dockSize: 'M',
+      artEnabled: true,
+      artIdleMinutes: CONFIG.artIdleMinutes || 3,
+      artSlideSeconds: CONFIG.artSlideSeconds || 60,
+      weatherCity: (CONFIG.weather && CONFIG.weather.name) || 'Ho Chi Minh City',
+      rev: 0
+    };
+  }
+
+  var SETTINGS = defaultSettings();
+
+  function mergeSettings(dst, src) {
+    if (!src) return dst;
+    ['wallpaper', 'dockSize', 'artEnabled', 'artIdleMinutes', 'artSlideSeconds', 'weatherCity', 'rev']
+      .forEach(function (k) { if (src[k] !== undefined) dst[k] = src[k]; });
+    return dst;
+  }
+
+  function loadLocalSettings() {
+    try { mergeSettings(SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY))); } catch (e) {}
+  }
+
+  function saveSettings(push) {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(SETTINGS)); } catch (e) {}
+    if (push !== false) pushServerConfig();
+  }
+
+  function pushServerConfig() {
+    if (!ART_SERVER) return;
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', ART_SERVER + '/config.json', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(SETTINGS));
+    } catch (e) { /* server offline: the local copy still applies */ }
+  }
+
+  function pullServerConfig(done) {
+    if (!ART_SERVER) { if (done) done(false); return; }
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', ART_SERVER + '/config.json', true);
+      xhr.timeout = 5000;
+      xhr.onload = function () {
+        var adopted = false;
+        try {
+          var cfg = JSON.parse(xhr.responseText);
+          if (cfg && (cfg.rev || 0) > (SETTINGS.rev || 0)) {
+            SETTINGS = mergeSettings(defaultSettings(), cfg);
+            saveSettings(false);
+            adopted = true;
+          }
+        } catch (e) {}
+        if (done) done(adopted);
+      };
+      xhr.onerror = function () { if (done) done(false); };
+      xhr.ontimeout = function () { if (done) done(false); };
+      xhr.send();
+    } catch (e) { if (done) done(false); }
+  }
+
+  function weatherCity() {
+    for (var i = 0; i < WEATHER_CITIES.length; i++) {
+      if (WEATHER_CITIES[i].name === SETTINGS.weatherCity) return WEATHER_CITIES[i];
+    }
+    if (CONFIG.weather) return CONFIG.weather;
+    return WEATHER_CITIES[0];
+  }
+
+  function applySettings() {
+    // Wallpaper: a server photo/GIF replaces the bundled image; a missing file falls back to it.
+    if (SETTINGS.wallpaper && SETTINGS.wallpaper !== 'bundled' && ART_SERVER) {
+      var url = ART_SERVER + '/photos/' + encodeURIComponent(SETTINGS.wallpaper);
+      var probe = new Image();
+      probe.onload = function () { document.body.style.backgroundImage = 'url("' + url + '")'; };
+      probe.onerror = function () { document.body.style.backgroundImage = ''; };
+      probe.src = url;
+    } else {
+      document.body.style.backgroundImage = '';
+    }
+
+    // Dock size: tile geometry is all in the TILE_/PITCH/ROW_TOP vars the layout code reads.
+    var px = DOCK_SIZES[SETTINGS.dockSize] || 168;
+    TILE_W = px; TILE_H = px; PITCH = px + 60; ROW_TOP = 954 - px;
+    items.forEach(function (it) {
+      it.el.style.width = px + 'px';
+      it.card.style.width = px + 'px';
+      it.card.style.height = px + 'px';
+    });
+    if (items.length) {
+      layout();
+      // While a panel is open, focusTile would steal the zone back to the grid
+      // (it calls setZone('grid')) and the arrows would move home tiles behind
+      // the panel. The panel's close path refocuses the tile itself.
+      if (zone !== 'settings' && zone !== 'inputs') focusTile(focused);
+    }
+
+    // Photo Frame timing.
+    ART_IDLE_MS = SETTINGS.artEnabled ? (SETTINGS.artIdleMinutes || 0) * 60000 : 0;
+    ART_SLIDE_MS = (SETTINGS.artSlideSeconds || 60) * 1000;
+    if (artOn && !SETTINGS.artEnabled) stopArt();
+    resetIdle();
+  }
+
+  // ---- settings panel --------------------------------------------------------------------------
+
+  var setPanel = $('settingsPanel'), setRowsEl = $('settingsRows');
+  var setRows = [], setFocus = 0, setSwallowOk = false;
+  var wallpaperOptions = [{ value: 'bundled', label: 'Kame House (built-in)' }];
+
+  function cycleOptions(values, labels) {
+    return values.map(function (v, i) { return { value: v, label: labels[i] }; });
+  }
+
+  function settingDefs() {
+    return [
+      { key: 'wallpaper', label: 'Wallpaper', type: 'cycle', options: wallpaperOptions },
+      { key: 'dockSize', label: 'Dock size', type: 'cycle',
+        options: cycleOptions(['S', 'M', 'L'], ['Small', 'Medium', 'Large']) },
+      { key: 'artEnabled', label: 'Photo Frame', type: 'cycle',
+        options: cycleOptions([true, false], ['On', 'Off']) },
+      { key: 'artIdleMinutes', label: 'Frame starts after', type: 'cycle',
+        options: cycleOptions([1, 3, 5, 10], ['1 min', '3 min', '5 min', '10 min']) },
+      { key: 'artSlideSeconds', label: 'Each photo shows', type: 'cycle',
+        options: cycleOptions([30, 60, 120], ['30 sec', '60 sec', '2 min']) },
+      { key: 'weatherCity', label: 'Weather city', type: 'cycle',
+        options: WEATHER_CITIES.map(function (c) { return { value: c.name, label: c.name }; }) },
+      { key: 'tvSettings', label: 'TV settings', type: 'action',
+        run: function () { launch('com.palm.app.settings', 'Settings'); } },
+      { key: 'netSettings', label: 'Network settings', type: 'action',
+        run: function () { launch('com.palm.app.settings', 'Settings', { target: 'network' }); } },
+      { key: 'reset', label: 'Reset launcher settings', type: 'action',
+        run: function () {
+          var rev = (SETTINGS.rev || 0) + 1;
+          SETTINGS = defaultSettings();
+          SETTINGS.rev = rev;
+          saveSettings();
+          applySettings();
+          renderSetRows();
+          toast('Launcher settings reset');
+        } }
+    ];
+  }
+
+  function renderSetRows() {
+    setRowsEl.innerHTML = '';
+    setRows = settingDefs().map(function (def, idx) {
+      var row = document.createElement('div');
+      row.className = 'setRow';
+      var lab = document.createElement('span');
+      lab.textContent = def.label;
+      var val = document.createElement('span');
+      val.className = 'val';
+      row.appendChild(lab);
+      row.appendChild(val);
+      row.addEventListener('mouseover', function () { focusSet(idx); });
+      row.addEventListener('click', function () {
+        focusSet(idx);
+        if (def.type === 'action') runSetAction();
+        else changeSetting(1);
+      });
+      setRowsEl.appendChild(row);
+      return { def: def, el: row, valEl: val };
+    });
+    renderSetValues();
+    focusSet(setFocus);
+  }
+
+  function renderSetValues() {
+    setRows.forEach(function (r) {
+      if (r.def.type !== 'cycle') { r.valEl.textContent = '\u203A'; return; }
+      var cur = SETTINGS[r.def.key];
+      var label = '';
+      r.def.options.forEach(function (o) { if (o.value === cur) label = o.label; });
+      if (!label && r.def.key === 'wallpaper' && cur) label = String(cur).replace(/\.[a-z0-9]+$/i, '');
+      r.valEl.textContent = '\u2039 ' + (label || String(cur)) + ' \u203A';
+    });
+  }
+
+  function focusSet(i) {
+    if (!setRows.length) return;
+    if (setRows[setFocus]) setRows[setFocus].el.classList.remove('focused');
+    setFocus = Math.max(0, Math.min(i, setRows.length - 1));
+    setRows[setFocus].el.classList.add('focused');
+  }
+
+  function changeSetting(dir) {
+    var r = setRows[setFocus];
+    if (!r || r.def.type !== 'cycle') return;
+    var opts = r.def.options, idx = -1;
+    opts.forEach(function (o, i) { if (o.value === SETTINGS[r.def.key]) idx = i; });
+    idx = (idx + dir + opts.length) % opts.length;
+    SETTINGS[r.def.key] = opts[idx].value;
+    SETTINGS.rev = (SETTINGS.rev || 0) + 1;
+    applySettings();
+    saveSettings();
+    renderSetValues();
+    if (r.def.key === 'weatherCity') fetchWeather();
+  }
+
+  function runSetAction() {
+    var r = setRows[setFocus];
+    if (!r || r.def.type !== 'action') return;
+    setSwallowOk = true;   // the OK keyup that follows must not also open the focused tile
+    hideSettings();
+    r.def.run();
+  }
+
+  function showSettings() {
+    if (ART_SERVER) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', ART_SERVER + '/list.json', true);
+        xhr.timeout = 4000;
+        xhr.onload = function () {
+          try {
+            var names = JSON.parse(xhr.responseText).photos || [];
+            wallpaperOptions = [{ value: 'bundled', label: 'Kame House (built-in)' }].concat(
+              names.map(function (n) { return { value: n, label: n.replace(/\.[a-z0-9]+$/i, '') }; }));
+            if (zone === 'settings') renderSetRows();
+          } catch (e) {}
+        };
+        xhr.send();
+      } catch (e) {}
+    }
+    renderSetRows();
+    setPanel.classList.remove('hidden');
+    pills[pillFocus].classList.remove('focused');
+    if (items[focused]) items[focused].el.classList.remove('focused');
+    hideGlass();
+    setFocus = 0;
+    focusSet(0);
+    zone = 'settings';
+  }
+
+  function hideSettings() {
+    setPanel.classList.add('hidden');
+    zone = 'none';
+    focusTile(focused);
+  }
+
+  function isSettingsTile(app) { return app && app.id === SETTINGS_TILE_ID; }
 
   // ---- focus & glass -------------------------------------------------------------------------
 
@@ -429,19 +695,20 @@
     67: 'Freezing rain', 71: 'Snow', 73: 'Snow', 75: 'Snow', 77: 'Snow', 80: 'Showers', 81: 'Showers',
     82: 'Showers', 85: 'Snow', 86: 'Snow', 95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Thunderstorm' };
 
-  /** Current weather + today's high/low for Ho Chi Minh City; silent if the TV is offline. */
+  /** Current weather + today's high/low for the configured city; silent if the TV is offline. */
   function fetchWeather() {
+    var city = weatherCity();
     try {
       var xhr = new XMLHttpRequest();
-      xhr.open('GET', 'https://api.open-meteo.com/v1/forecast?latitude=10.8231&longitude=106.6297' +
+      xhr.open('GET', 'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat + '&longitude=' + city.lon +
         '&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min' +
-        '&timezone=Asia%2FHo_Chi_Minh', true);
+        '&timezone=auto', true);
       xhr.onreadystatechange = function () {
         if (xhr.readyState !== 4 || xhr.status !== 200) return;
         try {
           var d = JSON.parse(xhr.responseText);
           var label = WMO_TEXT[d.current.weather_code] || '';
-          $('weatherText').textContent = 'Ho Chi Minh City \u00B7 ' + Math.round(d.current.temperature_2m) +
+          $('weatherText').textContent = city.name + ' \u00B7 ' + Math.round(d.current.temperature_2m) +
             '\u00B0 ' + label + ' \u00B7 H ' + Math.round(d.daily.temperature_2m_max[0]) +
             '\u00B0 L ' + Math.round(d.daily.temperature_2m_min[0]) + '\u00B0';
         } catch (e) { /* keep the line empty */ }
@@ -550,12 +817,14 @@
     if (artSwallowed) { artSwallowed = false; return; }
     if (e.keyCode !== KEY.OK) return;
     okDown = false;
+    if (setSwallowOk) { setSwallowOk = false; return; }
     if (!okTimer) return;
     clearTimeout(okTimer);
     okTimer = null;
     var it = items[focused];
     if (zone === 'grid' && it && !editing) {
       if (it.app.id === INPUTS_ID) showInputs();
+      else if (isSettingsTile(it.app)) showSettings();
       else launch(it.app.id, it.app.title);
     }
   });
@@ -585,6 +854,18 @@
       else if (k === KEY.OK) activatePill(pillFocus);
       else if (k === KEY.BACK) { /* home screen: Back goes nowhere */ }
       else return;
+    } else if (zone === 'settings') {
+      if (k === KEY.UP) focusSet(setFocus - 1);
+      else if (k === KEY.DOWN) focusSet(setFocus + 1);
+      else if (k === KEY.LEFT) changeSetting(-1);
+      else if (k === KEY.RIGHT) changeSetting(1);
+      else if (k === KEY.OK) {
+        var sr = setRows[setFocus];
+        if (sr && sr.def.type === 'action') runSetAction();
+        else changeSetting(1);
+      }
+      else if (k === KEY.BACK || k === KEY.ESC) hideSettings();
+      else return;
     } else {
       var last = items.length - 1;
       if (k === KEY.LEFT) { if (focused > 0) focusTile(focused - 1); }
@@ -598,7 +879,7 @@
   });
 
   pills.forEach(function (p, i) {
-    p.addEventListener('mouseover', function () { if (zone !== 'inputs') focusPill(i); });
+    p.addEventListener('mouseover', function () { if (zone !== 'inputs' && zone !== 'settings') focusPill(i); });
     p.addEventListener('click', function () { activatePill(i); });
   });
 
@@ -636,6 +917,7 @@
 
   function startArt() {
     if (artOn || !ART_SERVER) return;
+    if (zone === 'settings' || zone === 'inputs') { resetIdle(); return; }   // menus open: stay put
     var gen = artGen;
     var xhr = new XMLHttpRequest();
     xhr.open('GET', ART_SERVER + '/list.json', true);
@@ -703,6 +985,7 @@
     updateClock();
     fetchWeather();
     if (zone === 'inputs') panel.classList.add('hidden');
+    if (zone === 'settings') setPanel.classList.add('hidden');
     pills.forEach(function (p) { p.classList.remove('focused'); });
     zone = 'none';
     animateIn();
@@ -713,6 +996,8 @@
   document.addEventListener('visibilitychange', function () { if (!document.hidden) resume(); });
 
   build();
+  loadLocalSettings();
+  applySettings();
   updateClock();
   fetchWeather();
   setInterval(updateClock, 10000);
@@ -722,4 +1007,7 @@
   zone = 'none';
   focusTile(0);
   resetIdle();
+  pullServerConfig(function (adopted) {
+    if (adopted) { applySettings(); fetchWeather(); }
+  });
 })();

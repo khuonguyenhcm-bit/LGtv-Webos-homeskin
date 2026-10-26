@@ -29,6 +29,10 @@ window.CONFIG = {
   artIdleMinutes: 3,
   artSlideSeconds: 60,
 
+  // Weather defaults. The city can also be changed in the on-TV Settings
+  // panel (Settings tile) or from the phone page of the art server.
+  weather: { name: 'Ho Chi Minh City', lat: 10.8231, lon: 106.6297 },
+
   // How many dockApps the row takes before the alphabetical rest (see above).
   columns: 7
 };
