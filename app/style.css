@@ -270,3 +270,45 @@ body.editing #glass { opacity: 0 !important; }
 }
 
 #toast.shown { opacity: 1; }
+
+/* ---- Art Mode: idle photo slideshow over everything ------------------------- */
+#art {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+
+#art.on { opacity: 1; pointer-events: auto; }
+
+#art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+
+#art img.vis { opacity: 1; }
+
+#art img.kb { animation: artkb 26s ease-in-out infinite alternate; }
+
+@keyframes artkb {
+  from { transform: scale(1) translate(0, 0); }
+  to { transform: scale(1.08) translate(-1.2%, 1%); }
+}
+
+#artClock {
+  position: absolute;
+  right: 64px;
+  bottom: 48px;
+  font-size: 40px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+}

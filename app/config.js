@@ -21,6 +21,14 @@ window.CONFIG = {
   // The Live TV app, offered at the end of the Inputs menu. Leave empty to omit.
   liveTvApp: 'com.webos.app.livetv',
 
+  // Art Mode: after artIdleMinutes with no remote input on the home screen,
+  // show a full-screen photo slideshow served by the art server (art-server/
+  // folder in this repo) running on a computer on the same network.
+  // Set artServer to that computer's address, or '' to disable Art Mode.
+  artServer: 'http://192.168.1.50:8797',
+  artIdleMinutes: 3,
+  artSlideSeconds: 20,
+
   // How many dockApps the row takes before the alphabetical rest (see above).
   columns: 7
 };

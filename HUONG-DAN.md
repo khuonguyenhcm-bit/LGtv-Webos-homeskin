@@ -88,6 +88,10 @@ Gỡ ra: `bash home-watch-mac.sh uninstall`. Bấm Home 2 lần trong 3 giây s�
 - **Thứ tự app:** cứ liệt kê id theo đúng thứ tự mong muốn trong `dockApps` của `app/config.js` (bản mẫu: YouTube, Apple Music, Netflix, Apple TV, Inputs, Settings, Apps) và đặt `columns` bằng đúng số lượng đó; phần còn lại tự xếp theo bảng chữ cái. Trên tivi, **giữ OK** trên một ô để kéo thả sắp xếp — thứ tự được lưu trên tivi. Tên app chỉ hiện dưới ô đang được chọn.
 - **Ẩn app không thích:** thêm id của app vào `hiddenApps` trong `app/config.js` (bản mẫu đã ẩn sẵn 8 Ball Pool). Xem id: `venv/bin/python sync-apps.py <IP tivi> --list`.
 - **Đổi icon từng app:** thả PNG vuông (nên 1024×1024) vào `icons-custom/`, đặt tên đúng tên file icon của app đó (xem trong `app/icons/` sau lần cài đầu). Từ lần cài sau, icon của bạn luôn thắng icon tivi cấp.
+- **Art Mode (tivi thành khung tranh):** ở màn hình chính quá số phút đã đặt mà không bấm gì, launcher tự chuyển sang trình chiếu ảnh toàn màn hình (chuyển cảnh mờ dần + zoom chậm, đồng hồ nhỏ ở góc dưới), bấm phím bất kỳ là thoát. Cách bật:
+  1. Chạy server ảnh trong thư mục `art-server/` trên một máy luôn bật cùng mạng (Mac: sửa đường dẫn trong `com.khuong.artserver.plist` rồi nạp LaunchAgent theo ghi chú trong file; hoặc chạy thẳng `python3 art_server.py 8797 ./photos`). Thư mục đã có sẵn 5 tranh mẫu.
+  2. Trong `app/config.js`: đặt `artServer` = `http://<IP của máy đó>:8797`, chỉnh `artIdleMinutes` (mặc định 3) và `artSlideSeconds` (mặc định 20), rồi cài lại lên tivi.
+  3. Thêm/xoá ảnh: mở `http://<IP máy đó>:8797/` bằng điện thoại hoặc máy tính — có sẵn trang tải ảnh lên. Ảnh ngang 1920×1080 là đẹp nhất. Tivi tự lấy danh sách mới mỗi lần vào Art Mode; máy server tắt thì Art Mode tự bỏ qua, launcher vẫn bình thường.
 
 ## 6. Cập nhật / cài lại
 

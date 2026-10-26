@@ -24,6 +24,7 @@ This is community software that runs via the TV's Developer Mode — **you insta
 | `app/config.js` | Cấu hình mẫu: dock = Netflix, YouTube, Apple TV, Apple Music; ẩn 8 Ball Pool; ghim ô Settings lên đầu lưới / Sample config |
 | `sync-apps.py` | Bản đã vá: tự áp icon trong `icons-custom/` sau mỗi lần sync + tự thêm 2 ô đặc biệt **Settings** và **Inputs** / Patched: applies `icons-custom/` overrides on every sync and injects synthetic **Settings** and **Inputs** tiles |
 | `icons-custom/` | Bộ icon 1024×1024 nét cao (Netflix, YouTube, FPT Play, Apple TV, Apple Music...) — ghi đè icon 130px mờ mà tivi cấp / High-resolution 1024×1024 replacement icons — the TV only serves blurry 130px ones |
+| `art-server/` | Server ảnh cho **Art Mode**: để màn hình chính yên vài phút, tivi biến thành khung tranh trình chiếu ảnh (server chạy trên máy luôn bật trong nhà, có trang tải ảnh lên bằng điện thoại) / Photo server for **Art Mode**: leave the home screen idle for a few minutes and the TV becomes a picture frame (server runs on an always-on machine at home, with a phone-friendly upload page) |
 
 Thời tiết lấy từ [Open-Meteo](https://open-meteo.com) (miễn phí, không cần tài khoản), mặc định tọa độ TP. Hồ Chí Minh — đổi `latitude/longitude` trong `app.js` (hàm `fetchWeather`) cho nơi của bạn.
 Weather comes from [Open-Meteo](https://open-meteo.com) (free, no key), defaulting to Ho Chi Minh City — change `latitude/longitude` in `fetchWeather` inside `app.js`.

@@ -547,6 +547,7 @@
 
   // On tiles OK acts on release, so a held OK can start rearranging instead of opening the app.
   document.addEventListener('keyup', function (e) {
+    if (artSwallowed) { artSwallowed = false; return; }
     if (e.keyCode !== KEY.OK) return;
     okDown = false;
     if (!okTimer) return;
@@ -561,6 +562,8 @@
 
   document.addEventListener('keydown', function (e) {
     var k = e.keyCode;
+    if (artOn) { stopArt(); artSwallowed = true; resetIdle(); e.preventDefault(); return; }
+    resetIdle();
     if (k === KEY.OK && okDown) { e.preventDefault(); return; }   // key repeat while held
     if (k === KEY.OK) okDown = true;
     if (editing) {
@@ -599,10 +602,106 @@
     p.addEventListener('click', function () { activatePill(i); });
   });
 
+  // ---- Art Mode: idle slideshow fed by the art server (see config.js) ------------------------
+
+  var ART_SERVER = (CONFIG.artServer || '').replace(/\/$/, '');
+  var ART_IDLE_MS = (CONFIG.artIdleMinutes || 0) * 60000;
+  var ART_SLIDE_MS = (CONFIG.artSlideSeconds || 20) * 1000;
+  var artEl = document.getElementById('art');
+  var artLayers = [document.getElementById('artA'), document.getElementById('artB')];
+  var artClockEl = document.getElementById('artClock');
+  var artOn = false, artSwallowed = false;
+  var artTimer = null, slideTimer = null, artClockTimer = null, artGen = 0;
+  var artList = [], artIdx = 0, artLayer = 0;
+
+  function resetIdle() {
+    artGen++;
+    clearTimeout(artTimer);
+    if (ART_SERVER && ART_IDLE_MS > 0 && !artOn) artTimer = setTimeout(startArt, ART_IDLE_MS);
+  }
+
+  function artClockTick() {
+    var d = new Date(), h = d.getHours();
+    artClockEl.textContent = (h % 12 || 12) + ':' + ('0' + d.getMinutes()).slice(-2) + (h >= 12 ? ' PM' : ' AM');
+  }
+
+  function artShow(img, name, onShown) {
+    img.onload = function () {
+      img.classList.add('vis');
+      img.classList.remove('kb');
+      void img.offsetWidth;
+      img.classList.add('kb');
+      if (onShown) onShown();
+    };
+    img.onerror = function () { if (onShown) onShown(); };
+    img.src = ART_SERVER + '/photos/' + encodeURIComponent(name);
+  }
+
+  function startArt() {
+    if (artOn || !ART_SERVER) return;
+    var gen = artGen;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', ART_SERVER + '/list.json', true);
+    xhr.timeout = 6000;
+    xhr.onload = function () {
+      if (gen !== artGen) return;   // the user pressed something meanwhile
+      var names = [];
+      try { names = JSON.parse(xhr.responseText).photos || []; } catch (e) {}
+      if (!names.length) { resetIdle(); return; }
+      for (var i = names.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1)), t = names[i];
+        names[i] = names[j]; names[j] = t;
+      }
+      artList = names; artIdx = 0; artLayer = 0;
+      artOn = true;
+      artClockTick();
+      artClockTimer = setInterval(artClockTick, 20000);
+      artShow(artLayers[0], artList[0], null);
+      artEl.classList.add('on');
+      slideTimer = setInterval(nextArt, ART_SLIDE_MS);
+    };
+    xhr.onerror = function () { resetIdle(); };
+    xhr.ontimeout = function () { resetIdle(); };
+    xhr.send();
+  }
+
+  function nextArt() {
+    if (!artList.length) return;
+    artIdx = (artIdx + 1) % artList.length;
+    var next = artLayers[1 - artLayer];
+    var prev = artLayers[artLayer];
+    artShow(next, artList[artIdx], function () {
+      prev.classList.remove('vis');
+      artLayer = 1 - artLayer;
+    });
+    // Safety: if the photo fails silently, still swap after the fade window.
+    setTimeout(function () {
+      if (artOn && !next.classList.contains('vis')) {
+        next.classList.add('vis');
+        prev.classList.remove('vis');
+        artLayer = 1 - artLayer;
+      }
+    }, 2500);
+  }
+
+  function stopArt() {
+    artOn = false;
+    artGen++;
+    clearInterval(slideTimer);
+    clearInterval(artClockTimer);
+    artEl.classList.remove('on');
+    setTimeout(function () {
+      artLayers.forEach(function (img) { img.classList.remove('vis'); });
+    }, 900);
+  }
+
+  artEl.addEventListener('click', function () { if (artOn) { stopArt(); resetIdle(); } });
+
   // ---- lifecycle -----------------------------------------------------------------------------
 
   /** Back from another app (or opened again from the shortcut): replay the entrance, keep the tile. */
   function resume() {
+    if (artOn) stopArt();
     if (editing) finishEdit(false);
     updateClock();
     fetchWeather();
@@ -625,4 +724,5 @@
   animateIn();
   zone = 'none';
   focusTile(0);
+  resetIdle();
 })();

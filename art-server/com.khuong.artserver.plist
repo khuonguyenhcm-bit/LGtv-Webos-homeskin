@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- macOS LaunchAgent template for the Art Mode photo server.
+     1. Copy art_server.py and the photos folder where you want them.
+     2. Replace YOURNAME and the paths below, save as
+        ~/Library/LaunchAgents/com.khuong.artserver.plist
+     3. launchctl load ~/Library/LaunchAgents/com.khuong.artserver.plist -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.khuong.artserver</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/YOURNAME/art-server/art_server.py</string>
+    <string>8797</string>
+    <string>/Users/YOURNAME/art-server/photos</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/tmp/artserver.log</string>
+  <key>StandardErrorPath</key><string>/tmp/artserver.log</string>
+</dict>
+</plist>
