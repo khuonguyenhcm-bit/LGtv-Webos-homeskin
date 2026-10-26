@@ -296,12 +296,8 @@ body.editing #glass { opacity: 0 !important; }
 
 #art img.vis { opacity: 1; }
 
-#art img.kb { animation: artkb 26s ease-in-out infinite alternate; }
-
-@keyframes artkb {
-  from { transform: scale(1) translate(0, 0); }
-  to { transform: scale(1.08) translate(-1.2%, 1%); }
-}
+/* Photo Frame: images stay perfectly still like a real painting — the only
+   motion is the opacity crossfade when the photo changes. No Ken Burns. */
 
 #artClock {
   position: absolute;

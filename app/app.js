@@ -628,9 +628,6 @@
   function artShow(img, name, onShown) {
     img.onload = function () {
       img.classList.add('vis');
-      img.classList.remove('kb');
-      void img.offsetWidth;
-      img.classList.add('kb');
       if (onShown) onShown();
     };
     img.onerror = function () { if (onShown) onShown(); };

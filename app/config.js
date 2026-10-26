@@ -27,7 +27,7 @@ window.CONFIG = {
   // Set artServer to that computer's address, or '' to disable Art Mode.
   artServer: 'http://192.168.1.50:8797',
   artIdleMinutes: 3,
-  artSlideSeconds: 20,
+  artSlideSeconds: 60,
 
   // How many dockApps the row takes before the alphabetical rest (see above).
   columns: 7
